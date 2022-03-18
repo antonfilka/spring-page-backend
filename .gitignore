@@ -102,3 +102,5 @@ dist
 
 # TernJS port file
 .tern-port
+.DS_Store
+Stage 5.1 - Server. NodeJS. Rest API..pdf
