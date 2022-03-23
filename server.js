@@ -114,7 +114,7 @@ app.post("/api/login", (req, res) => {
     userData.isAuth = true;
     res.status(200).send({ isAuth: userData.isAuth });
   } else {
-    res.status(200).send({ isAuth: userData.isAuth });
+    res.send({ isAuth: userData.isAuth });
   }
 });
 
@@ -145,3 +145,5 @@ app.get("/api/:string", (req, res) => {
 });
 
 app.listen(8000, () => console.log("Server has been started"));
+
+// export default app;
