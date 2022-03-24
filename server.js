@@ -6,7 +6,15 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const userData = { username: "admin", password: 1234, isAuth: false };
+// pre-commit hook
+// pre-push hook
+
+const userData = {
+  username: "admin",
+
+  password: 1234,
+  isAuth: false,
+};
 const cards = [
   {
     title: "Spring Boot",
@@ -112,15 +120,20 @@ app.post("/api/login", (req, res) => {
     req.body.password == userData.password
   ) {
     userData.isAuth = true;
+
     res.status(200).send({ isAuth: userData.isAuth });
   } else {
     res.send({ isAuth: userData.isAuth });
   }
 });
 
+// log out
 app.get("/api/signout", (req, res) => {
   userData.isAuth = false;
-  res.status(200).send({ isAuth: userData.isAuth });
+
+  res.status(200).send({
+    isAuth: userData.isAuth,
+  });
 });
 
 app.get("/api/isAuthorized", (req, res) => {
@@ -146,4 +159,4 @@ app.get("/api/:string", (req, res) => {
 
 app.listen(8000, () => console.log("Server has been started"));
 
-// export default app;
+exports.app = app;
