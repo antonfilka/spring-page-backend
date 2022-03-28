@@ -6,7 +6,15 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const userData = { username: "admin", password: 1234, isAuth: false };
+// pre-commit hook
+// pre-push hook
+
+const userData = {
+  username: "admin",
+
+  password: 1234,
+  isAuth: false,
+};
 const cards = [
   {
     title: "Spring Boot",
@@ -106,4 +114,49 @@ const cards = [
   },
 ];
 
+app.post("/api/login", (req, res) => {
+  if (
+    req.body.username == userData.username &&
+    req.body.password == userData.password
+  ) {
+    userData.isAuth = true;
+
+    res.status(200).send({ isAuth: userData.isAuth });
+  } else {
+    res.send({ isAuth: userData.isAuth });
+  }
+});
+
+// log out
+app.get("/api/signout", (req, res) => {
+  userData.isAuth = false;
+
+  res.status(200).send({
+    isAuth: userData.isAuth,
+  });
+});
+
+app.get("/api/isAuthorized", (req, res) => {
+  res.status(200).send({ isAuth: userData.isAuth });
+});
+
+app.get("/api/", (req, res) => {
+  const filteredCards = cards;
+  res.status(200).send({ cards: filteredCards });
+});
+
+app.get("/api/:string", (req, res) => {
+  var string = req.params.string.toLowerCase();
+  string == ""
+    ? (filteredCards = cards)
+    : (filteredCards = cards.filter(
+        (card) =>
+          card.title.toLowerCase().includes(string) ||
+          card.text.toLowerCase().includes(string)
+      ));
+  res.status(200).send({ cards: filteredCards });
+});
+
 app.listen(8000, () => console.log("Server has been started"));
+
+exports.app = app;
