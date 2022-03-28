@@ -1,0 +1,25 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model springProjects {
+  projectId Int    @id(map: "newtable_pk") @default(autoincrement())
+  title     String @db.VarChar
+  text      String @db.VarChar
+  img       String @db.VarChar
+}
+
+model users {
+  userId       Int    @id(map: "users_pk") @default(autoincrement())
+  username     String @unique(map: "users_un")
+  hashPassword String @db.VarChar
+  firstName    String @db.VarChar
+  lastName     String @db.VarChar
+  age          Int
+  refreshToken String @db.VarChar
+}
