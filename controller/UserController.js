@@ -1,8 +1,6 @@
-const { PrismaClient } = require("@prisma/client");
 const { validationResult } = require("express-validator");
 const userService = require("./../service/UserService");
 const ApiError = require("../exceptions/ApiError");
-const prisma = new PrismaClient();
 
 class UserController {
   async registration(req, res, next) {
