@@ -2,6 +2,8 @@ const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcrypt");
 const tokenService = require("./TokenService");
 const UserDto = require("./../dtos/UserDto");
+const ApiError = require("../exceptions/ApiError");
+const { use } = require("bcrypt/promises");
 
 const prisma = new PrismaClient();
 
@@ -12,8 +14,11 @@ class UserService {
         username: username,
       },
     });
+
     if (candidate) {
-      throw new Error(`User with username '${username}' already exists`);
+      throw ApiError.Badrequest(
+        `User with username '${username}' already exists`
+      );
     }
 
     const hashPassword = await bcrypt.hash(password, 3);
@@ -30,11 +35,72 @@ class UserService {
     });
 
     const userDto = new UserDto(user);
+
     const tokens = tokenService.generateTokens({ ...userDto });
 
     await tokenService.saveToken(userDto.userId, tokens.refreshToken);
 
     return { ...tokens, user: userDto };
+  }
+
+  async login(username, password) {
+    const user = await prisma.users.findUnique({
+      where: {
+        username: username,
+      },
+    });
+    if (!user) {
+      throw ApiError.Badrequest(
+        `User with username '${username}' doesn't exist.`
+      );
+    }
+
+    const isPassEquals = await bcrypt.compare(password, user.hashPassword);
+    if (!isPassEquals) {
+      throw ApiError.Badrequest("Invalid password");
+    }
+
+    const userDto = new UserDto(user);
+    const tokens = tokenService.generateTokens({ ...userDto });
+
+    await tokenService.saveToken(userDto.userId, tokens.refreshToken);
+
+    return { ...tokens, user: userDto };
+  }
+
+  async logout(refreshToken) {
+    const token = await tokenService.removeToken(refreshToken);
+    return token;
+  }
+
+  async refresh(refreshToken) {
+    if (!refreshToken) {
+      throw ApiError.UnauthorizedError();
+    }
+    const userData = tokenService.validateRefreshToken(refreshToken);
+    const tokenFromDb = await tokenService.findToken(refreshToken);
+    if (!userData || !tokenFromDb) {
+      throw ApiError.UnauthorizedError();
+    }
+
+    const user = await prisma.users.findUnique({
+      where: {
+        userId: userData.userId,
+      },
+    });
+
+    const userDto = new UserDto(user);
+
+    const tokens = tokenService.generateTokens({ ...userDto });
+
+    await tokenService.saveToken(userDto.userId, tokens.refreshToken);
+
+    return { ...tokens, user: userDto };
+  }
+
+  async getAllUsers() {
+    const users = await prisma.users.findMany();
+    return users;
   }
 }
 

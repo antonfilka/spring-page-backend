@@ -15,11 +15,11 @@ model springProjects {
 }
 
 model users {
-  userId       Int    @id(map: "users_pk") @default(autoincrement())
-  username     String @unique(map: "users_un")
-  hashPassword String @db.VarChar
-  firstName    String @db.VarChar
-  lastName     String @db.VarChar
+  userId       Int     @id(map: "users_pk") @default(autoincrement())
+  username     String  @unique(map: "users_un")
+  hashPassword String  @db.VarChar
+  firstName    String  @db.VarChar
+  lastName     String  @db.VarChar
   age          Int
-  refreshToken String @db.VarChar
+  refreshToken String? @db.VarChar
 }
