@@ -25,15 +25,3 @@ const start = async () => {
 };
 
 start();
-
-app.get("/api/:string", (req, res) => {
-  var string = req.params.string.toLowerCase();
-  string == ""
-    ? (filteredCards = cards)
-    : (filteredCards = cards.filter(
-        (card) =>
-          card.title.toLowerCase().includes(string) ||
-          card.text.toLowerCase().includes(string)
-      ));
-  res.status(200).send({ cards: filteredCards });
-});
