@@ -16,9 +16,9 @@ router.post(
       min: 4,
     })
     .matches(/\d/)
-    .withMessage("must contain a number")
+    .withMessage("Must contain a number")
     .matches(/[a-zA-Z]/)
-    .withMessage("must contain a letter"),
+    .withMessage("Must contain a letter"),
   body("confirmPassword", "Passwords don't match").custom(
     (value, { req, loc, path }) => {
       if (value !== req.body.password) {
@@ -34,7 +34,9 @@ router.post(
   body("lastName", "Last name must contain at least 3 symbols").isLength({
     min: 3,
   }),
-  body("age", "Age should be numeric and grater then 0").isInt({ min: 1 }),
+  body("age", "Age should be numeric and grater then 0")
+    .toInt()
+    .isInt({ min: 1 }),
   userController.registration
 );
 router.post("/login", userController.login);
