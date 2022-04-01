@@ -30,7 +30,6 @@ class UserService {
         firstName: firstName,
         lastName: lastName,
         age: age,
-        refreshToken: "",
       },
     });
 
@@ -38,7 +37,14 @@ class UserService {
 
     const tokens = tokenService.generateTokens({ ...userDto });
 
-    await tokenService.saveToken(userDto.userId, tokens.refreshToken);
+    await prisma.users.update({
+      where: {
+        userId: userDto.userId,
+      },
+      data: {
+        isauth: 1,
+      },
+    });
 
     return { ...tokens, user: userDto };
   }
@@ -49,6 +55,7 @@ class UserService {
         username: username,
       },
     });
+
     if (!user) {
       throw ApiError.Badrequest(
         `User with username '${username}' doesn't exist.`
@@ -63,14 +70,29 @@ class UserService {
     const userDto = new UserDto(user);
     const tokens = tokenService.generateTokens({ ...userDto });
 
-    await tokenService.saveToken(userDto.userId, tokens.refreshToken);
+    await prisma.users.update({
+      where: {
+        userId: userDto.userId,
+      },
+      data: {
+        isauth: 1,
+      },
+    });
 
     return { ...tokens, user: userDto };
   }
 
   async logout(refreshToken) {
-    const token = await tokenService.removeToken(refreshToken);
-    return token;
+    const user = tokenService.validateRefreshToken(refreshToken);
+    const userData = await prisma.users.update({
+      where: {
+        userId: user.userId,
+      },
+      data: {
+        isauth: 0,
+      },
+    });
+    return userData;
   }
 
   async refresh(refreshToken) {
@@ -78,8 +100,8 @@ class UserService {
       throw ApiError.UnauthorizedError();
     }
     const userData = tokenService.validateRefreshToken(refreshToken);
-    const tokenFromDb = await tokenService.findToken(refreshToken);
-    if (!userData || !tokenFromDb) {
+
+    if (!userData) {
       throw ApiError.UnauthorizedError();
     }
 
@@ -92,8 +114,6 @@ class UserService {
     const userDto = new UserDto(user);
 
     const tokens = tokenService.generateTokens({ ...userDto });
-
-    await tokenService.saveToken(userDto.userId, tokens.refreshToken);
 
     return { ...tokens, user: userDto };
   }
